@@ -1,0 +1,149 @@
+from tkinter import *
+from tkinter.ttk import Combobox
+import time
+# pip install pillow
+from PIL import Image, ImageTk
+
+########################################
+import threading 
+from timeit import default_timer as time
+################################################
+#from pydub import AudioSegment
+#from pydub.playback import play
+
+trackList = [];
+master = Tk()
+
+######################################33
+def metrenomeUpdate():
+    startTime = time()
+    counter = 0
+    while(time() < startTime + duration.get()):
+        
+        difference = time() - startTime + duration.get()
+        #print(difference)
+        counter = round(difference/(60.0/userbpm.get()))%4
+        dispMetrenome(counter)
+
+def dispMetrenome(c):
+    if(c != 0):
+        Label(master, image = baseRect).place(x=210,y = 140)
+    if(c != 1):
+        Label(master, image = baseRect).place(x=240,y = 140)
+    if(c != 2):
+        Label(master, image = baseRect).place(x=270,y = 140)
+    if(c != 3):
+        Label(master, image = baseRect).place(x=300,y = 140)
+    
+    Label(master, image = redRect).place(x=210 + c*30,y = 140)
+###################################################################
+    
+def record():
+    print ("recording:)")
+    print ("duration val: ",duration.get())
+    Label(master, text="RECORDING").place(x=250, y=7)
+    t1 = threading.Thread(target=metrenomeUpdate) 
+    t1.start()
+    #t1.join()
+
+
+def stop():
+   print ("stop recording:)")
+   Label(master, text="STOPPED     ").place(x=250, y=7)
+   
+
+
+def play():
+    print ("playing")
+    
+    for x in range (1,1):
+        mixed = AudioSegment.from_file()
+
+
+
+global fileName;
+fileName = StringVar()
+
+def addTrack():
+    isUnique = True;
+    for i in trackList:
+        if(i == fileName.get()):
+            isUnique = False
+            break
+    if(isUnique == True):
+        print("fileName:",fileName.get())
+        Checkbutton(master, text=fileName.get()).pack(side = TOP,anchor=W)
+        trackList.append(fileName.get())
+    elif(isUnique == False):
+        print("same name")
+    
+
+       
+
+   
+
+
+    
+
+def playProject():
+    print("playProject")
+
+
+def saveProject():
+    print("saveProject")
+
+    
+
+
+data=("violin", "guitar","trumpet","piano", "cello", "flute")
+frame = Frame(master, height=200, width=350)
+
+global duration
+duration = DoubleVar()
+Label(master, text="enter duration").place(x=5, y=5)
+e = Entry(master, bd =5,textvariable = duration,width = 5).place(x=95, y=5)
+
+Button(master,text='record',command=record).place(x=150, y=5)
+Button(master,text='stop',command=stop).place(x=205, y=5)
+
+
+Combobox(master, values=data).place(x=5, y=37)
+Button(master,text='play',command=play).place(x=155, y=35)
+
+
+Label(master, text="file name").place(x=5, y=67)
+Entry(master, bd =5,textvariable = fileName).place(x=65, y=65)
+Button(master,text='add track',command=addTrack).place(x=195, y=65)
+
+
+
+
+Button(master,text='play project',command=playProject).place(x=5, y=95)
+Button(master,text='save project',command=saveProject).place(x=95, y=95)
+
+###################new stuff
+global userbpm
+userbpm = DoubleVar()
+userbpm.set(60)
+Label(master, text= 'Metronome amount(BPM): ').place(x=5,y=135)
+b = Entry(master, bd =5, textvariable = userbpm, width = 5).place(x=155,y=135)
+
+
+global baseRect
+global redRect
+redRect = ImageTk.PhotoImage(Image.open("pic.png"))
+baseRect = ImageTk.PhotoImage(Image.open("pic2.png"))
+
+dispMetrenome(0)
+
+frame.pack_propagate(0) # don't shrink
+frame.pack()
+################## new stuff
+
+mainloop()
+
+
+
+
+
+

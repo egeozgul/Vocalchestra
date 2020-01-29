@@ -1,0 +1,92 @@
+import librosa
+import math
+import numpy as np
+
+BASE            = 392       #sample file note is g4
+
+PATH            = '/Users/dogacancolak/Desktop/instruments/'
+
+VIOLIN          = 'violin'
+VIOLIN_INDEX    = 0
+
+CELLO           = 'cello'
+CELLO_INDEX     = 1
+
+FLUTE           = 'flute'
+FLUTE_INDEX     = 2
+
+PIANO           = 'piano'
+PIANO_INDEX     = 3
+
+TRUMPET         = 'trumpet'
+TRUMPET_INDEX   = 4
+
+GUITAR          = 'guitar'
+GUITAR_INDEX    = 5
+
+def initializeInstruments():
+    instruments = [PATH] * 6
+
+    instruments[VIOLIN_INDEX]   += VIOLIN + '.wav'
+    instruments[CELLO_INDEX]    += CELLO + '.wav'
+    instruments[FLUTE_INDEX]    += FLUTE + '.wav'
+    instruments[PIANO_INDEX]    += PIANO + '.wav'
+    instruments[TRUMPET_INDEX]  += TRUMPET + '.wav'
+    instruments[GUITAR_INDEX]   += GUITAR + '.wav'
+
+    return instruments
+    
+def instrumentToIndex(instrument):
+    if instrument == VIOLIN:
+        return VIOLIN_INDEX
+    elif instrument == CELLO:
+        return CELLO_INDEX
+    elif instrument == FLUTE:
+        return FLUTE_INDEX
+    elif instrument == PIANO:
+        return PIANO_INDEX
+    elif instrument == TRUMPET:
+        return TRUMPET_INDEX
+    elif instrument == GUITAR:
+        return GUITAR_INDEX
+    
+def freqToStepsFromBase(freq):
+    return int(round(12*math.log2(freq/BASE)))
+    
+def createNote(instrument, freq, duration):
+    instruments = initializeInstruments()
+    audio_file = instruments[instrumentToIndex(instrument)]
+    base_duration = librosa.get_duration(filename=audio_file)
+    duration_coefficient = base_duration / duration
+    steps = freqToStepsFromBase(freq)
+    if instrument == TRUMPET:
+        steps -= 12
+    elif instrument == CELLO:
+        steps -= 24
+
+    y, sr = librosa.load(audio_file)
+    y = librosa.effects.time_stretch(y, duration_coefficient)
+    y = librosa.effects.pitch_shift(y, sr,n_steps=steps)
+
+    note = [y, sr]
+    
+    return note
+
+def combine(notes):
+    y = []
+    sr = notes[0][1]
+
+    for x in notes:
+        y = np.concatenate((y, x[0]))
+        
+    return [y, sr]
+
+def convert(notes_data, instrument):
+    notes = [] 
+    for x in notes_data:
+        notes.append(createNote(instrument, x[0], x[1]))
+
+    melody = combine(notes)
+    
+    librosa.output.write_wav(PATH + instrument + '_new.wav', melody[0],
+                             melody[1])
